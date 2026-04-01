@@ -14,24 +14,136 @@
       height: 100vh;
     }
 
+    /* --- Giriş Ekranı --- */
+    #login-screen {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    #login-box {
+      background: white;
+      border-radius: 12px;
+      padding: 32px 28px;
+      width: 340px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    #login-box h2 {
+      color: #075e54;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    #login-box label {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    #login-box input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    #login-box input:focus { border-color: #075e54; }
+
+    .avatar-row, .color-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .avatar-option {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      background: #f5f5f5;
+      font-size: 28px;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s, transform 0.15s;
+      user-select: none;
+    }
+
+    .avatar-option.selected {
+      border-color: #075e54;
+      transform: scale(1.12);
+    }
+
+    .color-option {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: border-color 0.15s;
+    }
+
+    .color-option.selected { border-color: #333; }
+
+    #login-btn {
+      background: #075e54;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    #login-btn:hover { background: #128c7e; }
+
+    /* --- Chat Ekranı --- */
     #header {
       background: #075e54;
       color: white;
       padding: 14px 20px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
       box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-
-    #header img {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
     }
 
     #header .info .name { font-weight: bold; font-size: 16px; }
     #header .info .status { font-size: 12px; color: #b2dfdb; }
+
+    #header-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #header-user-avatar {
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    #header-user-info {
+      text-align: right;
+    }
+
+    #header-user-info .name {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    #header-user-info .label {
+      font-size: 11px;
+      color: #b2dfdb;
+    }
 
     #messages {
       flex: 1;
@@ -57,24 +169,44 @@
       font-size: 14px;
       line-height: 1.4;
       word-break: break-word;
-      position: relative;
     }
 
-    .bubble-wrapper.mine  .bubble { background: #dcf8c6; border-bottom-right-radius: 2px; }
-    .bubble-wrapper.other .bubble { background: white;   border-bottom-left-radius: 2px; }
+    .bubble-wrapper.mine .bubble {
+      background: #dcf8c6;
+      border-bottom-right-radius: 2px;
+    }
+
+    .bubble-wrapper.other .bubble {
+      border-bottom-left-radius: 2px;
+      /* renk JS tarafından inline style ile set edilir */
+    }
 
     .bubble .sender-name {
       font-size: 12px;
       font-weight: bold;
-      color: #075e54;
       margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sender-avatar-emoji {
+      font-size: 16px;
     }
 
     .bubble .time {
       font-size: 11px;
-      color: #999;
+      color: #000;
       margin-top: 4px;
       text-align: right;
+    }
+
+    #typing-indicator {
+      padding: 4px 16px 2px;
+      font-size: 13px;
+      color: #555;
+      font-style: italic;
+      min-height: 22px;
     }
 
     .system-msg {
@@ -118,35 +250,51 @@
     }
 
     #send:hover { background: #128c7e; }
-
-    #my-name-bar {
-      background: #128c7e;
-      color: white;
-      padding: 6px 16px;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    #my-name-bar span { opacity: 0.85; }
-    #my-name-bar strong { font-size: 14px; }
   </style>
 </head>
 <body>
-  <div id="header">
-    <img src="https://i.pravatar.cc/40?img=5" alt="avatar" />
-    <div class="info">
-      <div class="name">gRPC-Web Chat Odası</div>
-      <div class="status">demo · gerçek zamanlı</div>
+
+  <!-- Giriş Ekranı -->
+  <div id="login-screen">
+    <div id="login-box">
+      <h2>💬 Chat'e Katıl</h2>
+
+      <div>
+        <label>Kullanıcı Adı</label>
+        <input type="text" id="ln-name" placeholder="Adınızı girin..." maxlength="20" />
+      </div>
+
+      <div>
+        <label>Avatar Seç</label>
+        <div class="avatar-row" id="avatar-row"></div>
+      </div>
+
+      <div>
+        <label>Renk Seç</label>
+        <div class="color-row" id="color-row"></div>
+      </div>
+
+      <button id="login-btn">Giriş Yap</button>
     </div>
   </div>
 
-  <div id="my-name-bar">
-    <span>Sen:</span> <strong id="display-name">Yükleniyor...</strong>
+  <!-- Chat Ekranı -->
+  <div id="header">
+    <div class="info">
+      <div class="name">Web Programlama Demosu</div>
+      <div class="status">gRPC chat uygulaması</div>
+    </div>
+    <div id="header-user">
+      <div id="header-user-info">
+        <div class="name" id="display-name"></div>
+        <div class="label">Sen</div>
+      </div>
+      <div id="header-user-avatar"></div>
+    </div>
   </div>
 
   <div id="messages"></div>
+  <div id="typing-indicator"></div>
 
   <div id="footer">
     <input id="input" placeholder="Mesaj yaz..." autocomplete="off" />

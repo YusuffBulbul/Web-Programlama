@@ -82,6 +82,16 @@ func (s *ChatServer) SohbetiDinle(req *pb.SohbetiDinleIstek, stream pb.ChatServi
 }
 
 func (s *ChatServer) YaziyorDurumuGuncelle(ctx context.Context, req *pb.YaziyorDurumuIstek) (*pb.YaziyorDurumuYanit, error) {
-	// İsteğe bağlı: Yazıyor durumu için broadcast yapılabilir
+	msg := &pb.Mesaj{
+		Id:       "typing_" + req.Kullanici.Id,
+		Kullanici: req.Kullanici,
+		Tip:      pb.MesajTipi_YAZIYOR,
+	}
+	if req.Yaziyor {
+		msg.Icerik = "1"
+	} else {
+		msg.Icerik = "0"
+	}
+	s.broadcaster.Broadcast(msg)
 	return &pb.YaziyorDurumuYanit{Basarili: true}, nil
 }
