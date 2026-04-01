@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package chat;
+option go_package = "./proto;chat";
+
+enum MesajTipi {
+  METIN = 0;
+  SISTEM = 1;
+  YAZIYOR = 2;
+}
+
+message Kullanici {
+  string id = 1;
+  string ad = 2;
+  string avatar_url = 3;
+}
+
+message Mesaj {
+  string id = 1;
+  Kullanici kullanici = 2;
+  string icerik = 3;
+  MesajTipi tip = 4;
+  int64 zaman = 5;
+}
+
+message MesajGonderIstek {
+  Mesaj mesaj = 1;
+}
+
+message MesajGonderYanit {
+  bool basarili = 1;
+}
+
+message SohbetiDinleIstek {
+  string oda_id = 1;
+}
+
+message YaziyorDurumuIstek {
+  string oda_id = 1;
+  Kullanici kullanici = 2;
+  bool yaziyor = 3;
+}
+
+message YaziyorDurumuYanit {
+  bool basarili = 1;
+}
+
+service ChatServis {
+  rpc MesajGonder(MesajGonderIstek) returns (MesajGonderYanit);
+  rpc SohbetiDinle(SohbetiDinleIstek) returns (stream Mesaj);
+  rpc YaziyorDurumuGuncelle(YaziyorDurumuIstek) returns (YaziyorDurumuYanit);
+}
