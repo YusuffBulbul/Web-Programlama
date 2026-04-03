@@ -1,7 +1,6 @@
 const { ChatServisClient } = require('./chat_grpc_web_pb.js');
 const { MesajGonderIstek, SohbetiDinleIstek, Mesaj, Kullanici, MesajTipi, YaziyorDurumuIstek } = require('./chat_pb.js');
 
-// --- Avatar seçenekleri ---
 const AVATARLAR = ['🦓', '🦒', '🦁', '🐘', '🐯'];
 let seciliAvatar = AVATARLAR[0];
 
@@ -18,7 +17,6 @@ AVATARLAR.forEach((emoji, i) => {
   avatarRow.appendChild(btn);
 });
 
-// --- Renk seçenekleri ---
 const RENKLER = [
   '#e74c3c', '#8e44ad', '#2980b9',
   '#16a085', '#d35400', '#f0a500', '#27ae60',
@@ -39,7 +37,6 @@ RENKLER.forEach((renk, i) => {
   colorRow.appendChild(btn);
 });
 
-// --- Giriş ---
 document.getElementById('login-btn').addEventListener('click', () => {
   const ad = document.getElementById('ln-name').value.trim();
   if (!ad) { alert('Lütfen bir kullanıcı adı gir.'); return; }
@@ -51,7 +48,7 @@ document.getElementById('login-btn').addEventListener('click', () => {
   baslatChat(ad, seciliAvatar, seciliRenk);
 });
 
-// --- Chat ---
+
 function baslatChat(ad, avatarUrl, renk) {
   const client = new ChatServisClient('http://localhost:8080');
   const odaId = 'demo';
@@ -62,7 +59,6 @@ function baslatChat(ad, avatarUrl, renk) {
   kullanici.setAd(ad);
   kullanici.setAvatarUrl(avatarUrl);
 
-  // Rengi metadata olarak taşımak için id'ye göm: "id|renk"
   kullanici.setId(benimId + '|' + renk);
 
   const messagesDiv = document.getElementById('messages');
@@ -70,7 +66,6 @@ function baslatChat(ad, avatarUrl, renk) {
   const sendBtn = document.getElementById('send');
   const typingDiv = document.getElementById('typing-indicator');
 
-  // Yazıyor durumunu takip et: { id -> ad }
   const yaziyorlar = {};
 
   function yaziyorGuncelle() {
@@ -186,6 +181,8 @@ function baslatChat(ad, avatarUrl, renk) {
     client.mesajGonder(req, {}, (err) => {
       if (err) console.error('Send error:', err);
     });
+    if (yaziyorTimeout) clearTimeout(yaziyorTimeout);
+    yaziyorGonder(false);
     input.value = '';
   }
 
