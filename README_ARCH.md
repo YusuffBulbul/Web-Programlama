@@ -5,40 +5,40 @@
 > Auto-generated on 2026-09-04 by Repo-to-Blueprint Architect
 
 ## Project Purpose
-- Repository contains a Go-based gRPC chat backend and a JavaScript frontend that uses generated gRPC-web client code to interact with it (evidence: backend/main.go, backend/chat_server.go, backend/proto/*.proto / *.pb.go; frontend/index.html, frontend/main.js, frontend/chat_grpc_web_pb.js).
+This repository contains a web chat application implementation with a JavaScript frontend using gRPC-Web stubs and a Go backend exposing gRPC services (protobuf definitions present). Evidence: frontend/index.html, frontend/main.js, frontend/chat_grpc_web_pb.js, backend/main.go, backend/chat_server.go, backend/proto/chat.proto.
 
 ## Technical Stack
-- **Language**: Go (.go files) and JavaScript (.js, .html files).
-- **Framework**: gRPC / grpc-web (evidence: backend/proto/chat.proto, backend/proto/chat_grpc.pb.go, frontend/chat_grpc_web_pb.js).
-- **Key Dependencies**: Declared in backend/go.mod and frontend/package.json (files present: backend/go.mod, frontend/package.json — specific dependency lines not shown in provided evidence).
-- **Infrastructure**: Envoy proxy configuration present (envoy.yaml).
+- **Language**: Go (backend .go files), JavaScript (frontend .js, .html)
+- **Framework**: Not declared in parsed dependency files (dependency files present: backend/go.mod, frontend/package.json — contents not shown here)
+- **Key Dependencies**: Declared in dependency files backend/go.mod and frontend/package.json (specific libraries not enumerated here because dependency file contents were not provided)
+- **Infrastructure**: Envoy proxy config present (envoy.yaml)
 
 ## Architecture Blueprint
 
 ```mermaid
 flowchart TD
-subgraph FrontendLayer ["Frontend"]
-F1["index.html + main.js (frontend/index.html, frontend/main.js)"]
-F2["gRPC-web client (frontend/chat_grpc_web_pb.js / frontend/chat_pb.js)"]
+subgraph FrontendLayer
+FE["Frontend Service (frontend/index.html, frontend/main.js, frontend/chat_pb.js, frontend/chat_grpc_web_pb.js)"]
 end
-subgraph BackendLayer ["Backend"]
-B1["Go server (backend/main.go, backend/chat_server.go)"]
-B2["Protobuf artifacts (backend/proto/chat.proto, backend/proto/chat.pb.go, backend/proto/chat_grpc.pb.go)"]
+subgraph BackendLayer
+BE["Backend Service (backend/main.go, backend/chat_server.go)"]
 end
-subgraph ExternalLayer ["Infrastructure"]
-E1["Envoy proxy (envoy.yaml)"]
+subgraph ProtoLayer
+PR["Protobuf (backend/proto/chat.proto, backend/proto/chat.pb.go, backend/proto/chat_grpc.pb.go)"]
+end
+subgraph ExternalLayer
+ENVOY["Envoy proxy (envoy.yaml)"]
 end
 
-F1 -->|"loads JS"| F2
-F2 -->|"gRPC-web"| E1
-E1 -->|"gRPC"| B1
-B1 -->|"uses"| B2
+FE -->|"gRPC-Web" | ENVOY
+ENVOY -->|"gRPC" | BE
+PR -->|"generates stubs" | FE
+PR -->|"service definitions used by" | BE
 
-style F1 fill:#1f6feb,stroke:#58a6ff,color:#fff
-style F2 fill:#1f6feb,stroke:#58a6ff,color:#fff
-style B1 fill:#238636,stroke:#3fb950,color:#fff
-style B2 fill:#238636,stroke:#3fb950,color:#fff
-style E1 fill:#8b949e,stroke:#c9d1d9,color:#fff
+style FE fill:#1f6feb,stroke:#58a6ff,color:#fff
+style BE fill:#238636,stroke:#3fb950,color:#fff
+style ENVOY fill:#8b949e,stroke:#c9d1d9,color:#fff
+style PR fill:#8b949e,stroke:#c9d1d9,color:#fff
 
 ```
 
@@ -46,26 +46,27 @@ style E1 fill:#8b949e,stroke:#c9d1d9,color:#fff
 
 ```mermaid
 sequenceDiagram
-Browser->>Frontend: "GET index.html"
-Frontend->>Browser: "serve main.js (frontend/main.js)"
-Browser->>EnvoyProxy: "gRPC-web request (uses frontend/chat_grpc_web_pb.js)"
-EnvoyProxy->>GoServer: "translate/forward gRPC (envoy.yaml -> backend/main.go)"
-GoServer->>ProtoLayer: "serialize/deserialize messages (backend/proto/chat.pb.go)"
-ProtoLayer-->>GoServer: "message types / stubs (backend/proto/chat_grpc.pb.go)"
+User->>Frontend: "Open frontend/index.html / interact (frontend/main.js)"
+Frontend->>Envoy: "gRPC-Web request (uses frontend/chat_grpc_web_pb.js)"
+Envoy->>Backend: "Translate to gRPC and forward (envoy.yaml)"
+Backend->>Backend: "Handle RPC in backend/chat_server.go using backend/proto/chat.proto"
+Backend-->>Envoy: "gRPC response"
+Envoy-->>Frontend: "gRPC-Web response"
+Frontend-->>User: "Render/update UI (frontend/main.js)"
 
 ```
 
 ## Evidence-Based Risks
-1. Generated protobuf artifacts are checked into source control in both frontend and backend (frontend/chat_grpc_web_pb.js, frontend/chat_pb.js, backend/proto/chat.pb.go, backend/proto/chat_grpc.pb.go) — risk of drift and merge conflicts when proto source changes.
-2. Single Envoy configuration file exists (envoy.yaml) as the ingress/proxy indicator — central point that must be kept in sync with backend and frontend gRPC endpoints (evidence: envoy.yaml referencing repo gRPC artifacts).
-3. Project mixes generated client and server protobuf code plus application code without visible regeneration scripts in the tree (generated files present: frontend/chat_grpc_web_pb.js, backend/proto/*.pb.go; no scripts shown in repository root to regenerate them), increasing maintenance overhead.
+1. Committed generated protobuf artifacts are present in the repo (backend/proto/chat.pb.go, backend/proto/chat_grpc.pb.go, frontend/chat_pb.js, frontend/chat_grpc_web_pb.js) alongside the source proto (backend/proto/chat.proto) — risk of generated code and proto drifting or redundant binary/source code in VCS.
+2. Envoy configuration exists (envoy.yaml) but there are no deployment manifests or orchestration configs in the repository to show how envoy is run with the services (only envoy.yaml present) — risk: configuration may not be wired to runtime as-is.
+3. No test files or test directories detected in the tree (no *_test.go, no frontend test files) and no CI config files present in repository root — risk: changes may not be validated by automated tests in-repo.
 
 ---
 
 ## Repository Stats
 | Metric | Value |
 |--------|-------|
-| Total Files | 17 |
+| Total Files | 18 |
 | Total Directories | 4 |
 | Generated | 2026-09-04 |
 | Source | [YusuffBulbul/Web-Programlama](https://github.com/YusuffBulbul/Web-Programlama) |
